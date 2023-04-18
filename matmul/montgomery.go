@@ -64,7 +64,7 @@ func Mul_modular_montgomery(A *IntMatrix, B *IntMatrix) (*IntMatrix, error) {
 	final_mats := make([]*IntMatrix, nmoduli)
 	for i := 0; i < nmoduli; i++ {
 		reduced_mats_A[i] = make_uint_matrix(A.Rows, A.Cols)
-		reduced_mats_B[i] = make_uint_matrix(B.Rows, B.Cols)
+		reduced_mats_B[i] = make_uint_matrix(B.Cols, B.Rows)
 		final_mats[i] = make_Int_matrix(A.Rows, B.Cols)
 	}
 	//special 2^64 case
@@ -89,11 +89,11 @@ func Mul_modular_montgomery(A *IntMatrix, B *IntMatrix) (*IntMatrix, error) {
 			num := (B.Vals)[i][j]
 			switch num.Sign() {
 			case 1:
-				m2matBv[i][j] = uint64(num.Bits()[0])
+				m2matBv[j][i] = uint64(num.Bits()[0])
 			case -1:
-				m2matBv[i][j] = ^(uint64(num.Bits()[0])) + 1
+				m2matBv[j][i] = ^(uint64(num.Bits()[0])) + 1
 			case 0:
-				m2matBv[i][j] = 0
+				m2matBv[j][i] = 0
 			}
 
 		}
@@ -143,12 +143,12 @@ func Mul_modular_montgomery(A *IntMatrix, B *IntMatrix) (*IntMatrix, error) {
 				bits := n.Bits()
 				var r uint64 = 0
 				for bi, x := range bits {
-					r = (r + ((uint64(x)%m)*powers[bi])%m) % m
+					r = redadd((r + ((uint64(x)%m)*powers[bi])%m), m)
 				}
 				if n.Sign() == -1 {
 					r = m - r
 				}
-				Br[i][j] = r
+				Br[j][i] = r
 			}
 		}
 	}
@@ -165,7 +165,7 @@ func Mul_modular_montgomery(A *IntMatrix, B *IntMatrix) (*IntMatrix, error) {
 					for j := scol; j < ecol; j++ {
 						var r uint64 = 0
 						for k := 0; k < A.Cols; k++ {
-							r += A.Vals[i][k] * B.Vals[k][j]
+							r += A.Vals[i][k] * B.Vals[j][k]
 						}
 						C.Vals[i][j].SetUint64(uint64(r))
 					}
@@ -181,7 +181,7 @@ func Mul_modular_montgomery(A *IntMatrix, B *IntMatrix) (*IntMatrix, error) {
 						for j := scol; j < ecol; j++ {
 							var r uint64 = 0
 							for k := 0; k < A.Cols; k++ {
-								m := redc(A.Vals[i][k]*B.Vals[k][j], mod, modinvs[mix])
+								m := redc(A.Vals[i][k]*B.Vals[j][k], mod, modinvs[mix])
 								r = redadd(m+r, mod)
 
 							}
