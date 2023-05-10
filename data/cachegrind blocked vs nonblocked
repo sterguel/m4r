@@ -1,0 +1,52 @@
+[spv@juniper matmul]$ valgrind --tool=cachegrind ./test1
+==3036527== Cachegrind, a cache and branch-prediction profiler
+==3036527== Copyright (C) 2002-2017, and GNU GPL'd, by Nicholas Nethercote et al.
+==3036527== Using Valgrind-3.19.0 and LibVEX; rerun with -h for copyright info
+==3036527== Command: ./test1
+==3036527==
+--3036527-- warning: L3 cache found, using its data for the LL simulation.
+Matrices filled
+nonblocked: 57066683 µs
+==3036527==
+==3036527== I   refs:      27,870,436,617
+==3036527== I1  misses:             9,565
+==3036527== LLi misses:             4,827
+==3036527== I1  miss rate:           0.00%
+==3036527== LLi miss rate:           0.00%
+==3036527==
+==3036527== D   refs:       9,315,067,141  (9,270,788,570 rd   + 44,278,571 wr)
+==3036527== D1  misses:     2,178,822,037  (2,177,149,952 rd   +  1,672,085 wr)
+==3036527== LLd misses:           523,764  (       14,344 rd   +    509,420 wr)
+==3036527== D1  miss rate:           23.4% (         23.5%     +        3.8%  )
+==3036527== LLd miss rate:            0.0% (          0.0%     +        1.2%  )
+==3036527==
+==3036527== LL refs:        2,178,831,602  (2,177,159,517 rd   +  1,672,085 wr)
+==3036527== LL misses:            528,591  (       19,171 rd   +    509,420 wr)
+==3036527== LL miss rate:             0.0% (          0.0%     +        1.2%  )
+
+[spv@juniper matmul]$ valgrind --tool=cachegrind ./test2
+==3036648== Cachegrind, a cache and branch-prediction profiler
+==3036648== Copyright (C) 2002-2017, and GNU GPL'd, by Nicholas Nethercote et al.
+==3036648== Using Valgrind-3.19.0 and LibVEX; rerun with -h for copyright info
+==3036648== Command: ./test2
+==3036648==
+--3036648-- warning: L3 cache found, using its data for the LL simulation.
+Matrices filled
+blocked + Peeled: 78227778 µs
+==3036648==
+==3036648== I   refs:      45,601,203,813
+==3036648== I1  misses:             9,815
+==3036648== LLi misses:             4,845
+==3036648== I1  miss rate:           0.00%
+==3036648== LLi miss rate:           0.00%
+==3036648==
+==3036648== D   refs:      15,997,017,065  (15,954,073,676 rd   + 42,943,389 wr)
+==3036648== D1  misses:        28,923,908  (    28,579,493 rd   +    344,415 wr)
+==3036648== LLd misses:           524,086  (       180,675 rd   +    343,411 wr)
+==3036648== D1  miss rate:            0.2% (           0.2%     +        0.8%  )
+==3036648== LLd miss rate:            0.0% (           0.0%     +        0.8%  )
+==3036648==
+==3036648== LL refs:           28,933,723  (    28,589,308 rd   +    344,415 wr)
+==3036648== LL misses:            528,931  (       185,520 rd   +    343,411 wr)
+==3036648== LL miss rate:             0.0% (           0.0%     +        0.8%  )
+[spv@juniper matmul]$

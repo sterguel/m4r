@@ -73,18 +73,23 @@ func reduceint(n *big.Int, m uint) uint {
 	}
 	return acc
 }
-func mmax(M *IntMatrix) *big.Int {
+func mmax(M *IntMatrix) (*big.Int, bool) {
 	v := M.Vals
+	zero := big.NewInt(0)
 	m := big.NewInt(0)
+	hn := false
 	for i := 0; i < M.Rows; i++ {
 		for j := 0; j < M.Cols; j++ {
 			elt := v[i][j]
 			if elt.CmpAbs(m) == 1 {
 				m.Set(elt)
 			}
+			if (!hn) && elt.Cmp(zero) == -1 {
+				hn = true
+			}
 		}
 	}
-	return m
+	return m, hn
 }
 
 func make_uint_matrix(r int, c int) *uint64Matrix {
@@ -96,7 +101,7 @@ func make_uint_matrix(r int, c int) *uint64Matrix {
 	}
 	return &uint64Matrix{r, c, out_matrix}
 }
-func make_Int_matrix(r int, c int) *IntMatrix {
+func Make_Int_matrix(r int, c int) *IntMatrix {
 	//ensures matrix is contiguous
 	out_matrix := make([][]*big.Int, r)
 	orows := make([]*big.Int, r*c)
@@ -109,14 +114,14 @@ func make_Int_matrix(r int, c int) *IntMatrix {
 	return &IntMatrix{r, c, out_matrix}
 }
 
-const blocksize int = 64
+var blocksize int = 64
 
 func Mul_modular(A *IntMatrix, B *IntMatrix) (*IntMatrix, error) {
 	if A.Cols != B.Rows {
 		return nil, errors.New("mismatched dimensions")
 	}
-	maxv := mmax(A)
-	maxvb := mmax(B)
+	maxv, _ := mmax(A)
+	maxvb, _ := mmax(B)
 	maxbitsa := len(maxv.Bits())
 	maxbitsb := len(maxvb.Bits())
 	maxbitsab := imax(maxbitsa, maxbitsb)
@@ -145,7 +150,7 @@ func Mul_modular(A *IntMatrix, B *IntMatrix) (*IntMatrix, error) {
 	for i := 0; i < nmoduli; i++ {
 		reduced_mats_A[i] = make_uint_matrix(A.Rows, A.Cols)
 		reduced_mats_B[i] = make_uint_matrix(B.Rows, B.Cols)
-		final_mats[i] = make_Int_matrix(A.Rows, B.Cols)
+		final_mats[i] = Make_Int_matrix(A.Rows, B.Cols)
 	}
 	//special 2^64 case
 	m2matAv := reduced_mats_A[0].Vals

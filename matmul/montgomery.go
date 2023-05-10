@@ -35,15 +35,17 @@ func Mul_modular_montgomery(A *IntMatrix, B *IntMatrix) (*IntMatrix, error) {
 	if A.Cols != B.Rows {
 		return nil, errors.New("mismatched dimensions")
 	}
-	maxv := mmax(A)
-	maxvb := mmax(B)
+	maxv, hasnega := mmax(A)
+	maxvb, hasnegb := mmax(B)
 	maxbitsa := len(maxv.Bits())
 	maxbitsb := len(maxvb.Bits())
 	maxbitsab := imax(maxbitsa, maxbitsb)
 	maxv.Mul(maxv, maxvb)
 	maxv.Abs(maxv)
 	maxv.Mul(maxv, big.NewInt(int64(A.Cols)))
-	maxv.Mul(maxv, big.NewInt(2))
+	if hasnega || hasnegb {
+		maxv.Mul(maxv, big.NewInt(2))
+	}
 
 	var moduli []uint64
 	moduli = append(moduli, 0)
@@ -65,13 +67,12 @@ func Mul_modular_montgomery(A *IntMatrix, B *IntMatrix) (*IntMatrix, error) {
 	for i := 0; i < nmoduli; i++ {
 		reduced_mats_A[i] = make_uint_matrix(A.Rows, A.Cols)
 		reduced_mats_B[i] = make_uint_matrix(B.Cols, B.Rows)
-		final_mats[i] = make_Int_matrix(A.Rows, B.Cols)
+		final_mats[i] = Make_Int_matrix(A.Rows, B.Cols)
 	}
 	//special 2^64 case
 	m2matAv := reduced_mats_A[0].Vals
-	for i := 0; i < A.Rows; i++ {
-		for j := 0; j < A.Cols; j++ {
-			num := (A.Vals)[i][j]
+	for i, row := range A.Vals {
+		for j, num := range row {
 			switch num.Sign() {
 			case 1:
 				m2matAv[i][j] = uint64(num.Bits()[0])
@@ -84,9 +85,8 @@ func Mul_modular_montgomery(A *IntMatrix, B *IntMatrix) (*IntMatrix, error) {
 		}
 	}
 	m2matBv := reduced_mats_B[0].Vals
-	for i := 0; i < B.Rows; i++ {
-		for j := 0; j < B.Cols; j++ {
-			num := (B.Vals)[i][j]
+	for i, row := range B.Vals {
+		for j, num := range row {
 			switch num.Sign() {
 			case 1:
 				m2matBv[j][i] = uint64(num.Bits()[0])
@@ -100,8 +100,8 @@ func Mul_modular_montgomery(A *IntMatrix, B *IntMatrix) (*IntMatrix, error) {
 	}
 	modinvs := make([]uint64, nmoduli)
 	rinvs := make([]uint64, nmoduli)
-	for u := 1; u < nmoduli; u++ {
-		m := moduli[u]
+	for i, m := range moduli[1:nmoduli] {
+		u := i + 1
 		_, s, t := inteeu(1<<32, int64(m))
 		rinvs[u] = uint64(pos_mod(s, int64(m)))
 		//always positive as the sign bit is the leading bit
@@ -123,9 +123,8 @@ func Mul_modular_montgomery(A *IntMatrix, B *IntMatrix) (*IntMatrix, error) {
 		Ar := reduced_mats_A[u].Vals
 		Br := reduced_mats_B[u].Vals
 		//Reduce matrices mod m
-		for i := 0; i < A.Rows; i++ {
-			for j := 0; j < A.Cols; j++ {
-				n := A.Vals[i][j]
+		for i, row := range A.Vals {
+			for j, n := range row {
 				bits := n.Bits()
 				var r uint64 = 0
 				for bi, x := range bits {
@@ -137,9 +136,9 @@ func Mul_modular_montgomery(A *IntMatrix, B *IntMatrix) (*IntMatrix, error) {
 				Ar[i][j] = r
 			}
 		}
-		for i := 0; i < B.Rows; i++ {
-			for j := 0; j < B.Cols; j++ {
-				n := B.Vals[i][j]
+		for i, row := range B.Vals {
+			for j, n := range row {
+
 				bits := n.Bits()
 				var r uint64 = 0
 				for bi, x := range bits {
@@ -200,8 +199,8 @@ func Mul_modular_montgomery(A *IntMatrix, B *IntMatrix) (*IntMatrix, error) {
 	scratch, rx, sx := big.NewInt(0), big.NewInt(0), big.NewInt(0)
 	modlist[0] = big.NewInt(1 << 32)
 	modlist[0] = modlist[0].Mul(modlist[0], modlist[0])
-	for i := 1; i < nmoduli; i++ {
-		modlist[i] = big.NewInt(int64(moduli[i]))
+	for i, m := range moduli[1:] {
+		modlist[i+1] = big.NewInt(int64(m))
 	}
 	for nmoduli > icoll {
 		for i := 0; i < nmoduli-icoll; i += 2 * icoll {
@@ -210,9 +209,8 @@ func Mul_modular_montgomery(A *IntMatrix, B *IntMatrix) (*IntMatrix, error) {
 			sx.Mul(sx, modb)
 			rx.Mul(rx, moda)
 			moda.Mul(moda, modb)
-			for ci := 0; ci < A.Rows; ci++ {
-				for cj := 0; cj < B.Cols; cj++ {
-					t := final_mats[i].Vals[ci][cj]
+			for ci, row := range final_mats[i].Vals {
+				for cj, t := range row {
 					u := final_mats[i+icoll].Vals[ci][cj]
 					t.Mul(sx, t)
 					u.Mul(rx, u)
@@ -223,13 +221,15 @@ func Mul_modular_montgomery(A *IntMatrix, B *IntMatrix) (*IntMatrix, error) {
 		}
 		icoll *= 2
 	}
-	for ci := 0; ci < A.Rows; ci++ {
-		for cj := 0; cj < B.Cols; cj++ {
-			t := final_mats[0].Vals[ci][cj]
-			if t.Cmp(halfway_bound) == 1 {
-				t.Sub(t, modmax)
+	if hasnega || hasnegb {
+		for _, row := range final_mats[0].Vals {
+			for _, t := range row {
+				if t.Cmp(halfway_bound) == 1 {
+					t.Sub(t, modmax)
+				}
 			}
 		}
 	}
+
 	return final_mats[0], nil
 }
