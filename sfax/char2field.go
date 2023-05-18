@@ -1,7 +1,6 @@
 package sfax
 
 import (
-	"math/big"
 	"math/bits"
 )
 
@@ -71,9 +70,6 @@ func (F *Char2Field) Element(v uint64) *el2 {
 	}
 }
 
-func (F *Char2Field) Char() *big.Int {
-	return big.NewInt(2)
-}
 func (x *el2) Plus(y *el2) *el2 {
 	return &el2{
 		x.val ^ y.val,

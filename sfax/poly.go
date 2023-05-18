@@ -1,7 +1,6 @@
 package sfax
 
-type PolynomialRing[R Ring[R]] struct {
-	BaseRing *R
+type PolynomialRing[T RingElement[T]] struct {
 }
 type Polynomial[T RingElement[T]] []T
 
@@ -12,7 +11,7 @@ func (x *Polynomial[T]) Degree() int {
 func (x *Polynomial[T]) canon() {
 	ar := *x
 	w := len(*x)
-	zero := ar[0].AddGroup().Zero()
+	zero := ar[0].Zero()
 	ex := 0
 	for i := w - 1; i >= 0; i-- {
 		if !ar[i].Equals(zero) {

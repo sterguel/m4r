@@ -4,11 +4,13 @@ import "math/big"
 
 type commonElement[T any] interface {
 	Copy() T
+	String() string
 	Equals(T) bool
+	Set(T)
 }
 type MulMonoidElement[T any] interface {
 	commonElement[T]
-	MulMonoid() MulMonoid[T]
+	One() T
 	Mul(T, T)
 	Times(T) T
 }
@@ -21,34 +23,26 @@ type MulGroupElement[T any] interface {
 }
 type AddGroupElement[T any] interface {
 	commonElement[T]
-	AddGroup() AddGroup[T]
 	Neg() T
 	NegR(T)
 	Plus(T) T
 	Minus(T) T
 	Add(T, T)
 	Sub(T, T)
+	Zero() T
 }
 type RingElement[T any] interface {
 	MulMonoidElement[T]
 	AddGroupElement[T]
 }
-type MulMonoid[T any] interface {
-	One() T
-}
-type AddGroup[T any] interface {
-	Zero() T
-}
-type Ring[T any] interface {
-	MulMonoid[T]
-	AddGroup[T]
-}
-type Field[T any] interface {
-	Ring[T]
-	Char() *big.Int
+
+type FieldData struct {
+	Char   *big.Int // characteristic of the field
+	Degree int      // degree of the field over its characteristic field, 0 for infinite
+	Order  *big.Int // order of the field, nil if infinite
 }
 type FieldElement[T any] interface {
-	Field() Field[T]
+	FieldData() FieldData
 	AddGroupElement[T]
 	MulGroupElement[T]
 }
@@ -58,7 +52,7 @@ func Power[T MulGroupElement[T]](x T, y int) T {
 		return Power(x.Inv(), -y)
 	}
 	u := x.Copy()
-	res := x.MulMonoid().One()
+	res := x.One()
 	for y > 0 {
 		if (y & 1) != 0 {
 			res.Mul(res, u)
