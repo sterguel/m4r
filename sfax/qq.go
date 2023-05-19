@@ -2,4 +2,4 @@ package sfax
 
 import "math/big"
 
-type Rat big.Rat
+type Rat *big.Rat

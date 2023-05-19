@@ -79,15 +79,18 @@ func aexteeu[T FieldElement[T]](a []T, p []T, S []T) {
 		r2 = strim(r2, z)
 		r, r2 = r2, r
 		scratch := z.Zero()
-		for i := range q {
-			for j := range s {
+		for i, v := range q {
+			if v.Equals(z) {
+				continue
+			}
+			for j, u := range s {
 				if i+j >= len(s2) {
 					break
 				}
-				if s[j].Equals(z) {
+				if u.Equals(z) {
 					continue
 				}
-				scratch.Mul(q[i], s[j])
+				scratch.Mul(v, u)
 				s2[i+j].Sub(s2[i+j], scratch)
 			}
 		}
