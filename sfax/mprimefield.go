@@ -42,7 +42,6 @@ type SmallPrimeField struct {
 	r2   uint64
 	r    uint64
 	pinv uint64
-	rinv uint64
 	data FieldData
 }
 type SmallPrimeFieldElement struct {
@@ -57,8 +56,7 @@ func NewSmallPrimeField(p uint64) *SmallPrimeField {
 	r2 := (r * r) % p
 	r3 := (r2 * r) % p
 	ninv := (1 << 32) - uint64(inveeu(int64(p), 1<<32))
-	rinv := uint64(inveeu(int64(r), int64(p)))
-	return &SmallPrimeField{p: p, r2: r2, r3: r3, data: d, r: r, pinv: ninv, rinv: rinv}
+	return &SmallPrimeField{p: p, r2: r2, r3: r3, data: d, r: r, pinv: ninv}
 }
 func (x *SmallPrimeField) Element(n uint64) *pel {
 	return &pel{x, redc(n*x.r2, x.p, x.pinv)}
