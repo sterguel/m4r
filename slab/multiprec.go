@@ -58,21 +58,7 @@ func int64pow(a int64, b int64) int64 {
 	}
 	return res
 }
-func reduceint(n *big.Int, m uint) uint {
-	bits := n.Bits()
-	var base uint = (1 << 32) % m
-	base = (base * base) % m
-	var acc uint = 0
-	var mul uint = 1
-	for _, x := range bits {
-		acc = (acc + ((uint(x)%m)*mul)%m) % m
-		mul = (mul * base) % m
-	}
-	if n.Sign() == -1 {
-		return m - acc
-	}
-	return acc
-}
+
 func mmax(M *IntMatrix) (*big.Int, bool) {
 	v := M.Vals
 	zero := big.NewInt(0)
@@ -114,7 +100,11 @@ func Make_Int_matrix(r int, c int) *IntMatrix {
 	return &IntMatrix{r, c, out_matrix}
 }
 
-var blocksize int = 64
+func SetBlockSize(x int) {
+	blocksize = x
+}
+
+var blocksize int = 16
 
 func Mul_modular(A *IntMatrix, B *IntMatrix) (*IntMatrix, error) {
 	if A.Cols != B.Rows {
