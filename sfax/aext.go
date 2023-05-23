@@ -196,6 +196,14 @@ func (x *AlgExtField[T]) Zero() AlgExtElement[T] {
 		o,
 	}
 }
+func (x AlgExtElement[T]) FieldData() FieldData {
+	return x.field.data
+}
+func (x AlgExtElement[T]) Set(y AlgExtElement[T]) {
+	for i := 0; i < len(x.val) && i < len(y.val); i++ {
+		x.val[i].Set(y.val[i])
+	}
+}
 func (x AlgExtElement[T]) One() AlgExtElement[T] {
 	o := make([]T, x.field.Deg)
 	o[0] = x.field.bone.Copy()
@@ -323,9 +331,15 @@ func (x AlgExtElement[T]) Times(y AlgExtElement[T]) AlgExtElement[T] {
 	return AlgExtElement[T]{x.field, o}
 }
 func (x AlgExtElement[T]) Mul(a AlgExtElement[T], b AlgExtElement[T]) {
+	if &x.val[0] == &b.val[0] || &x.val[0] == &a.val[0] {
+		x.Set(a.Times(b))
+		return
+	}
 	high := make([]T, a.field.Deg-1)
+
 	scratch := a.field.bzero.Copy()
 	for i := range x.val {
+		x.val[i].Set(x.field.bzero)
 		for k := 0; k < i+1; k++ {
 			scratch.Mul(a.val[i-k], b.val[k])
 			x.val[i].Add(x.val[i], scratch)
