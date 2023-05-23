@@ -47,19 +47,3 @@ type FieldElement[T any] interface {
 	AddGroupElement[T]
 	MulGroupElement[T]
 }
-
-func Power[T MulGroupElement[T]](x T, y int) T {
-	if y < 0 {
-		return Power(x.Inv(), -y)
-	}
-	u := x.Copy()
-	res := x.One()
-	for y > 0 {
-		if (y & 1) != 0 {
-			res.Mul(res, u)
-		}
-		y = y >> 1
-		u.Mul(u, u)
-	}
-	return res
-}
