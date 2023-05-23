@@ -41,7 +41,7 @@ func SqrtFin[T FieldElement[T]](x T, not_square T) T {
 	Q.Add(Q, bigone)
 	Q.Div(Q, bigtwo)
 	R := BigPower(x, Q)
-	for U := 0; U < 3; U++ {
+	for {
 		if t.Equals(one) {
 			return R
 		}
@@ -64,5 +64,4 @@ func SqrtFin[T FieldElement[T]](x T, not_square T) T {
 		t.Mul(t, c)
 		R.Mul(R, b)
 	}
-	return R
 }
