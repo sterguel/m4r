@@ -1,6 +1,9 @@
 package sfax
 
-import "math/big"
+import (
+	"math/big"
+	"math/bits"
+)
 
 func Power[T MulGroupElement[T]](x T, y int) T {
 	if y < 0 {
@@ -12,7 +15,7 @@ func Power[T MulGroupElement[T]](x T, y int) T {
 		if (y & 1) != 0 {
 			res.Mul(res, u)
 		}
-		y = y >> 1
+		y >>= 1
 		u.Mul(u, u)
 	}
 	return res
@@ -21,18 +24,30 @@ func BigPower[T MulGroupElement[T]](x T, y *big.Int) T {
 	if y.Cmp(bigzero) == -1 {
 		return BigPower(x.Inv(), new(big.Int).Neg(y))
 	}
-	u := x.Copy()
+	b := y.Bits()
+	wc := len(b)
 	res := x.One()
-	for _, v := range y.Bits() {
+	if wc == 0 {
+		return res
+	}
+	u := x.Copy()
+	for _, v := range b[:wc-1] {
 		k := uint(v)
-		for k > 0 {
+		for i := 0; i < bits.UintSize; i++ {
 			if (k & 1) != 0 {
 				res.Mul(res, u)
 			}
-			k = k >> 1
+			k >>= 1
 			u.Mul(u, u)
 		}
 	}
-
+	k := uint(b[wc-1])
+	for k > 0 {
+		if (k & 1) != 0 {
+			res.Mul(res, u)
+		}
+		k >>= 1
+		u.Mul(u, u)
+	}
 	return res
 }
