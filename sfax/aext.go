@@ -5,18 +5,6 @@ import (
 	"strconv"
 )
 
-func strim[T FieldElement[T]](P []T, z T) []T {
-	l := len(P)
-	m := 0
-	for i := l - 1; i >= 0; i-- {
-		if !P[i].Equals(z) {
-			m = i + 1
-			break
-		}
-	}
-	return P[:m]
-}
-
 // in-place reduction of a polynomial into low by the monic polynomial p
 func aextred[T FieldElement[T]](low []T, high []T, p []T) {
 	zero := low[0].Zero()
@@ -205,25 +193,10 @@ func (x AlgExtElement[T]) Set(y AlgExtElement[T]) {
 	}
 }
 func (x AlgExtElement[T]) One() AlgExtElement[T] {
-	o := make([]T, x.field.Deg)
-	o[0] = x.field.bone.Copy()
-	for i := 1; i < len(o); i++ {
-		o[i] = x.field.bzero.Copy()
-	}
-	return AlgExtElement[T]{
-		x.field,
-		o,
-	}
+	return x.field.One()
 }
 func (x AlgExtElement[T]) Zero() AlgExtElement[T] {
-	o := make([]T, x.field.Deg)
-	for i := range o {
-		o[i] = x.field.bzero.Copy()
-	}
-	return AlgExtElement[T]{
-		x.field,
-		o,
-	}
+	return x.field.Zero()
 }
 func (x AlgExtElement[T]) Val() []T {
 	return x.val
@@ -251,7 +224,10 @@ func (x AlgExtElement[T]) String() string {
 		}
 		a += v.String()
 		if i != 0 {
-			a += x.field.symbol + "^" + strconv.Itoa(i)
+			a += x.field.symbol
+			if i != 1 {
+				a += "^" + strconv.Itoa(i)
+			}
 		}
 		if i != len(x.val)-1 {
 			a += "+"

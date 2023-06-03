@@ -88,12 +88,18 @@ func make_uint_matrix(r int, c int) *uint64Matrix {
 	return &uint64Matrix{r, c, out_matrix}
 }
 func Make_Int_matrix(r int, c int) *IntMatrix {
-	//ensures matrix is contiguous
 	out_matrix := make([][]*big.Int, r)
 	orows := make([]*big.Int, r*c)
 	for i := 0; i < r; i++ {
 		out_matrix[i] = orows[i*c : (i+1)*c]
 		for j := 0; j < c; j++ {
+			/*
+				Cannot ensure that the integers are contiguous.
+				If the abs fields share the same underlying array
+				and one of the nats needs to be resized, it will go into
+				the the next nat.
+				See nat.go in math/big
+			*/
 			out_matrix[i][j] = big.NewInt(0)
 		}
 	}

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math"
 	"math/big"
+	"runtime"
 	"sync"
 )
 
@@ -21,7 +22,7 @@ func SetWorkerCount(w int) {
 	workercount = w
 }
 
-var workercount int = 8
+var workercount int = runtime.NumCPU()
 
 func mod_work(w *matwork) {
 	a, b, c, mod, inv, e, s := w.arows, w.bcols, w.cblock, w.mod, w.inv, w.ecol, w.scol
