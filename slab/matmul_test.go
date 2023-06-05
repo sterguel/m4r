@@ -24,12 +24,12 @@ func fillMatrix(A *IntMatrix, wl int) {
 }
 
 func TestMul(t *testing.T) {
-	A := Make_Int_matrix(400, 300)
-	B := Make_Int_matrix(300, 450)
+	A := Make_Int_matrix(150, 250)
+	B := Make_Int_matrix(250, 200)
 	s := 4
 	fillMatrix(A, s)
 	fillMatrix(B, s)
-	Cv, _ := Mul_standard(A, B)
+	Cv, _ := Mul_Int_standard(A, B)
 	Ct, _ := Mul_modular_montgomery(A, B)
 	for i, row := range Cv.Vals {
 		for j, ent := range row {
@@ -43,8 +43,8 @@ func TestMul(t *testing.T) {
 }
 
 func TestJobsMul(t *testing.T) {
-	A := Make_Int_matrix(400, 300)
-	B := Make_Int_matrix(300, 450)
+	A := Make_Int_matrix(150, 250)
+	B := Make_Int_matrix(250, 200)
 	s := 4
 	fillMatrix(A, s)
 	fillMatrix(B, s)

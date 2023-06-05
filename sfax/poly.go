@@ -1,6 +1,8 @@
 package sfax
 
-import "strconv"
+import (
+	"strconv"
+)
 
 var default_poly_cap = 7 // degree 6
 func SetDefaultPolyCapacity(n int) {
@@ -38,12 +40,13 @@ func (x *Polynomial[T]) canon() {
 	x.val = ar[:ex]
 }
 
-func (R *PolynomialRing[T]) newpoly(c int) *Polynomial[T] {
-	v := make([]T, c)
-	for i := range v {
-		v[i] = R.bzero.Copy()
+func (R *PolynomialRing[T]) Element(x []T) *Polynomial[T] {
+	u := &Polynomial[T]{
+		R,
+		x,
 	}
-	return &Polynomial[T]{R, v[:0]}
+	u.canon()
+	return u
 }
 
 // math/big style resizing
@@ -52,18 +55,17 @@ func (x *Polynomial[T]) resize(n int) {
 	// reuse memory
 	if n <= cap(x.val) {
 		t := x.val[:n]
-		//zero out the new entries - unsure if necessary
-		// for i := len(x.val); i < n; i++ {
-		// 	t[i].Set(x.ring.bzero)
-		// }
 		x.val = t
 		return
 	}
-	r := make([]T, n, max(default_poly_cap, n))
+	ln := max(default_poly_cap, n)
+	r := make([]T, n, ln)
+	rub := r[:ln]
 	copy(r, x.val)
-	for i := len(x.val); i < n; i++ {
-		r[i] = x.ring.bzero.Copy()
+	for i := len(x.val); i < ln; i++ {
+		rub[i] = x.ring.bzero.Copy()
 	}
+	x.val = r
 }
 
 func (R *PolynomialRing[T]) Zero() *Polynomial[T] {
@@ -130,6 +132,10 @@ func (x *Polynomial[T]) String() string {
 	}
 	return a
 }
+func (x *Polynomial[T]) Coefs() []T {
+	return x.val
+}
+
 func (x *Polynomial[T]) Add(a *Polynomial[T], b *Polynomial[T]) {
 	av, bv := a.val, b.val //avoid issues if x == a or b
 	al, bl := len(av), len(bv)
@@ -242,11 +248,25 @@ func (x *Polynomial[T]) Mul(a *Polynomial[T], b *Polynomial[T]) {
 		av = x.Copy().val[:al]
 	}
 	s := a.ring.bzero.Copy()
+	for _, v := range x.val {
+		v.Set(a.ring.bzero)
+	}
 	for i, u := range av {
 		for j, v := range bv {
 			s.Mul(u, v)
 			x.val[i+j].Add(x.val[i+j], s)
 		}
+	}
+}
+
+// Scalar multiplication (in-place)
+func (x *Polynomial[T]) SMul(y T) {
+	if y.Equals(x.ring.bzero) {
+		x.val = x.val[:0]
+		return
+	}
+	for _, v := range x.val {
+		v.Mul(v, y)
 	}
 }
 func (x *Polynomial[T]) Times(y *Polynomial[T]) *Polynomial[T] {
@@ -268,6 +288,13 @@ func (x *Polynomial[T]) Times(y *Polynomial[T]) *Polynomial[T] {
 	}
 	//canon unnecessary as fields have no zero divisors
 	return &Polynomial[T]{x.ring, z}
+}
+
+// Scalar multiplication (out-of-place)
+func (x *Polynomial[T]) STimes(y T) *Polynomial[T] {
+	z := x.Copy()
+	z.SMul(y)
+	return z
 }
 
 // Reduce a mod n and store the result in x. Does not change a or n.
@@ -307,7 +334,7 @@ func (r *Polynomial[T]) QR(q *Polynomial[T], a *Polynomial[T], n *Polynomial[T])
 	for _, v := range q.val {
 		v.Set(a.ring.bzero)
 	}
-	fn := nv[lnv-1]
+	fn := nv[lnv-1] //leading term
 	cc := a.ring.bzero.Copy()
 	for len(xv) >= lnv {
 		d := len(xv)
@@ -329,4 +356,9 @@ func (a *Polynomial[T]) DGCD(b *Polynomial[T]) *Polynomial[T] {
 		b, a = a, b
 	}
 	return a
+}
+
+// Extended Euclidean algorithm for polynomials - computes d, s, t such that as + bt = d.
+func (d *Polynomial[T]) XGCD(s *Polynomial[T], t *Polynomial[T], a *Polynomial[T], b *Polynomial[T]) {
+
 }

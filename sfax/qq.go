@@ -21,7 +21,11 @@ func (x Rat) Copy() Rat {
 	}
 }
 func (x Rat) String() string {
+	if x.N.IsInt() {
+		return x.N.Num().String()
+	}
 	return x.N.String()
+
 }
 func (x Rat) Equals(y Rat) bool {
 	return x.N.Cmp(y.N) == 0

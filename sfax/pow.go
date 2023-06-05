@@ -51,3 +51,15 @@ func BigPower[T MulGroupElement[T]](x T, y *big.Int) T {
 	}
 	return res
 }
+func PosPower[T MulMonoidElement[T]](x T, y int) T {
+	u := x.Copy()
+	res := x.One()
+	for y > 0 {
+		if (y & 1) != 0 {
+			res.Mul(res, u)
+		}
+		y >>= 1
+		u.Mul(u, u)
+	}
+	return res
+}
