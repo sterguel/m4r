@@ -358,7 +358,37 @@ func (a *Polynomial[T]) DGCD(b *Polynomial[T]) *Polynomial[T] {
 	return a
 }
 
+// Sets x = gcd(a,b)
+func (x *Polynomial[T]) GCD(a *Polynomial[T], b *Polynomial[T]) {
+	x.Set(a)
+	r2 := b.Copy()
+	u := x.DGCD(r2)
+	if &u != &x {
+		x.Set(u)
+	}
+}
+
 // Extended Euclidean algorithm for polynomials - computes d, s, t such that as + bt = d.
-func (d *Polynomial[T]) XGCD(s *Polynomial[T], t *Polynomial[T], a *Polynomial[T], b *Polynomial[T]) {
+func (d *Polynomial[T]) XGCD(a *Polynomial[T], b *Polynomial[T]) (*Polynomial[T], *Polynomial[T]) {
+	d.Set(a)
+	r2, r := d, b.Copy()
+	s, s2 := a.Zero(), a.One()
+	t2, t := a.Zero(), a.One()
+	qsc, sc2 := a.Zero(), a.Zero()
+	for len(r.val) != 0 {
+		r2.QR(qsc, r2, r)
+		r, r2 = r2, r
+		sc2.Mul(qsc, s) // this is to avoid reallocating during the aliased multiplication
+		s2.Sub(s2, sc2)
+		s2, s = s, s2
+
+		sc2.Mul(qsc, t)
+		t2.Sub(t2, sc2)
+		t2, t = t, t2
+	}
+	if &d != &r2 {
+		d.Set(r2)
+	}
+	return s2, t2
 
 }
