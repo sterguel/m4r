@@ -61,6 +61,12 @@ func NewSmallPrimeField(p uint64) *SmallPrimeField {
 func (x *SmallPrimeField) Element(n uint64) *pel {
 	return &pel{x, redc(n*x.r2, x.p, x.pinv)}
 }
+func (F *SmallPrimeField) One() *pel {
+	return &pel{F, F.r}
+}
+func (F *SmallPrimeField) Zero() *pel {
+	return &pel{F, 0}
+}
 func (x *pel) Set(y *pel) {
 	x.val = y.val
 }

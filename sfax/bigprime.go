@@ -11,8 +11,8 @@ var wordsizeBig *big.Int = big.NewInt(wordsize)
 
 // In place REDC for big ints
 func bigredc(X *big.Int, p *big.Int, pinv *big.Int, wl int) {
-	t := new(big.Int)
-	wx := X.Bits()
+	t := new(big.Int).Set(X)
+	wx := t.Bits()
 	t.SetBits(wx[:min(wl, len(wx))]) //mod R reduction
 	t.Mul(t, pinv)
 	wx = t.Bits()
@@ -134,7 +134,7 @@ func (x bpel) Equals(y bpel) bool {
 	return (x.Field == y.Field) && (x.val.CmpAbs(y.val) == 0)
 }
 func (x bpel) String() string {
-	return x.val.String()
+	return x.Val().String()
 }
 func (x bpel) Neg() bpel {
 	return bpel{

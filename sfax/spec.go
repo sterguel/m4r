@@ -3,6 +3,8 @@ package sfax
 import "math/big"
 
 // Call the variable being acted on x, and the arguments y,z
+// In place example: x.Mul(y,z)
+// Out of place example: x := y.Times(z)
 type commonElement[T any] interface {
 	Copy() T //Creates a new copy of x
 	String() string

@@ -46,11 +46,12 @@ func c2red(x uint64, p uint64, deg int) uint64 {
 	}
 	return x
 }
-func c2qr(x uint64, p uint64, deg int) (uint64, uint64) {
-	var cmp uint64 = 1 << deg
+func c2qr(x uint64, p uint64) (uint64, uint64) {
 	var q uint64
+	d := bits.Len64(p)
+	var cmp uint64 = (1 << (d - 1)) - 1
 	for x > cmp {
-		diff := bits.Len64(x) - deg - 1
+		diff := bits.Len64(x) - d
 		q ^= (1 << diff)
 		x ^= (p << diff)
 	}
@@ -60,7 +61,7 @@ func c2eeu(x uint64, y uint64) uint64 {
 	r2, r := x, y
 	var s2, s uint64 = 1, 0
 	for r != 0 {
-		q, rem := c2qr(r2, r, bits.Len64(r))
+		q, rem := c2qr(r2, r)
 		r2, r = r, rem
 		s2, s = s, s2^c2mul(q, s)
 	}
@@ -83,6 +84,18 @@ func NewChar2Field(poly uint64) *Char2Field {
 func (F *Char2Field) Element(v uint64) *el2 {
 	return &el2{
 		v,
+		F,
+	}
+}
+func (F *Char2Field) Zero() *el2 {
+	return &el2{
+		0,
+		F,
+	}
+}
+func (F *Char2Field) One() *el2 {
+	return &el2{
+		1,
 		F,
 	}
 }
@@ -166,4 +179,7 @@ func (x *el2) Div(y *el2) *el2 {
 func (x *el2) DivR(a *el2, b *el2) {
 	x.InvR(b)
 	x.Mul(a, x)
+}
+func (x *el2) FieldData() FieldData {
+	return x.Field.Data
 }

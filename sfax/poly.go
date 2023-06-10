@@ -39,7 +39,13 @@ func (x *Polynomial[T]) canon() {
 	}
 	x.val = ar[:ex]
 }
-
+func (R *PolynomialRing[T]) FracElement(num []T, den []T) RatFunc[T] {
+	t := R.Element(num)
+	b := R.Element(den)
+	o := RatFunc[T]{t, b}
+	o.canon()
+	return o
+}
 func (R *PolynomialRing[T]) Element(x []T) *Polynomial[T] {
 	u := &Polynomial[T]{
 		R,
@@ -309,11 +315,13 @@ func (x *Polynomial[T]) Mod(a *Polynomial[T], n *Polynomial[T]) {
 	for len(xv) >= lnv {
 		d := len(xv)
 		sc.DivR(xv[d-1], fn)
-		xv = xv[:d-1] //chop off the last element as we don't need to compute a_n - a_n
+		//chop off the last element as we don't need to compute a_n - a_n
+		xv = xv[:d-1]
 		for i := 0; i < lnv-1; i++ {
-			cc.Mul(nv[lnv-1-i], sc)
+			cc.Mul(nv[lnv-2-i], sc)
 			xv[d-2-i].Sub(xv[d-2-i], cc)
 		}
+
 		xv = strim(xv, a.ring.bzero)
 	}
 	x.val = xv
@@ -341,7 +349,7 @@ func (r *Polynomial[T]) QR(q *Polynomial[T], a *Polynomial[T], n *Polynomial[T])
 		q.val[d-lnv].DivR(xv[d-1], fn)
 		xv = xv[:d-1] //chop off the last element as we don't need to compute a_n - a_n
 		for i := 0; i < lnv-1; i++ {
-			cc.Mul(nv[lnv-1-i], q.val[d-lnv])
+			cc.Mul(nv[lnv-2-i], q.val[d-lnv])
 			xv[d-2-i].Sub(xv[d-2-i], cc)
 		}
 		xv = strim(xv, a.ring.bzero)
@@ -354,6 +362,15 @@ func (a *Polynomial[T]) DGCD(b *Polynomial[T]) *Polynomial[T] {
 	for len(b.val) != 0 {
 		a.Mod(a, b)
 		b, a = a, b
+	}
+	//make monic
+	ld := len(a.val) - 1
+	if !a.val[ld].Equals(a.ring.bone) {
+		u := a.val[ld].Inv()
+		for _, v := range a.val {
+			v.Mul(v, u)
+		}
+
 	}
 	return a
 }
@@ -369,7 +386,7 @@ func (x *Polynomial[T]) GCD(a *Polynomial[T], b *Polynomial[T]) {
 }
 
 // Extended Euclidean algorithm for polynomials - computes d, s, t such that as + bt = d.
-func (d *Polynomial[T]) XGCD(a *Polynomial[T], b *Polynomial[T]) (*Polynomial[T], *Polynomial[T]) {
+func (d *Polynomial[T]) XGCD(a *Polynomial[T], b *Polynomial[T]) (s *Polynomial[T], t *Polynomial[T]) {
 	d.Set(a)
 	r2, r := d, b.Copy()
 	s, s2 := a.Zero(), a.One()
@@ -381,7 +398,6 @@ func (d *Polynomial[T]) XGCD(a *Polynomial[T], b *Polynomial[T]) (*Polynomial[T]
 		sc2.Mul(qsc, s) // this is to avoid reallocating during the aliased multiplication
 		s2.Sub(s2, sc2)
 		s2, s = s, s2
-
 		sc2.Mul(qsc, t)
 		t2.Sub(t2, sc2)
 		t2, t = t, t2
@@ -389,6 +405,19 @@ func (d *Polynomial[T]) XGCD(a *Polynomial[T], b *Polynomial[T]) (*Polynomial[T]
 	if &d != &r2 {
 		d.Set(r2)
 	}
+	//make monic
+	ld := len(d.val) - 1
+	if !d.val[ld].Equals(a.ring.bone) {
+		u := d.val[ld].Inv()
+		for _, v := range d.val {
+			v.Mul(v, u)
+		}
+		for _, v := range s2.val {
+			v.Mul(v, u)
+		}
+		for _, v := range t2.val {
+			v.Mul(v, u)
+		}
+	}
 	return s2, t2
-
 }
