@@ -46,6 +46,7 @@ func (R *PolynomialRing[T]) FracElement(num []T, den []T) RatFunc[T] {
 	o.canon()
 	return o
 }
+
 func (R *PolynomialRing[T]) Element(x []T) *Polynomial[T] {
 	u := &Polynomial[T]{
 		R,
@@ -420,4 +421,9 @@ func (d *Polynomial[T]) XGCD(a *Polynomial[T], b *Polynomial[T]) (s *Polynomial[
 		}
 	}
 	return s2, t2
+}
+func (x *Polynomial[T]) Frac(y *Polynomial[T]) RatFunc[T] {
+	out := RatFunc[T]{x, y}
+	out.canon()
+	return out
 }

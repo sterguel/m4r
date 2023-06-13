@@ -1,6 +1,6 @@
 package slab
 
-import "matmul/sfax"
+import "scale/sfax"
 
 type Matrix[T sfax.FieldElement[T]] [][]T
 

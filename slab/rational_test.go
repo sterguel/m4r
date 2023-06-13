@@ -3,7 +3,7 @@ package slab
 import (
 	"math/big"
 	"math/rand"
-	"matmul/sfax"
+	"scale/sfax"
 	"testing"
 	"time"
 )
@@ -37,7 +37,7 @@ func TestRatMul(t *testing.T) {
 	Cvout := Matrix[sfax.Rat](NewRatMatrix(p, r))
 	Cvout.Mul_singlethreaded(Ag, Bg)
 	Ctout := NewRatMatrix(p, r)
-	Ctout.Mul_rational_multimod(A, B)
+	Ctout.Mul_multimod(A, B)
 	for i, row := range Ctout {
 		for j, ent := range row {
 			if !ent.Equals(Cvout[i][j]) {

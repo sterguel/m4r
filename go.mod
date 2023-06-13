@@ -1,3 +1,3 @@
-module matmul
+module scale
 
 go 1.19

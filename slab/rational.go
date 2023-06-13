@@ -2,7 +2,7 @@ package slab
 
 import (
 	"math/big"
-	"matmul/sfax"
+	"scale/sfax"
 )
 
 func NewRatMatrix(rows int, cols int) RatMatrix {
@@ -72,10 +72,23 @@ func qclearcols(M RatMatrix) ([][]*big.Int, []*big.Int) {
 	}
 	return out, lcms
 }
-func (C RatMatrix) Mul_rational_multimod(A RatMatrix, B RatMatrix) {
+func (C RatMatrix) Mul_multimod(A RatMatrix, B RatMatrix) {
 	Aclear, rlcms := qclearrows(A)
 	Bclear, clcms := qclearcols(B)
 	Cclear, _ := Mul_modular_montgomery_jobs(&IntMatrix{len(Aclear), len(Aclear[0]), Aclear},
+		&IntMatrix{len(Bclear), len(Bclear[0]), Bclear})
+	sc := new(big.Int)
+	for i, row := range C {
+		for j, val := range row {
+			sc.Mul(rlcms[i], clcms[j])
+			val.N.SetFrac(Cclear.Vals[i][j], sc)
+		}
+	}
+}
+func (C RatMatrix) Mul_cleared_normal(A RatMatrix, B RatMatrix) {
+	Aclear, rlcms := qclearrows(A)
+	Bclear, clcms := qclearcols(B)
+	Cclear, _ := Mul_Int_standard(&IntMatrix{len(Aclear), len(Aclear[0]), Aclear},
 		&IntMatrix{len(Bclear), len(Bclear[0]), Bclear})
 	sc := new(big.Int)
 	for i, row := range C {

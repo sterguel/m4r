@@ -20,7 +20,11 @@ func SqrtFin[T FieldElement[T]](x T, not_square T) T {
 		panic("Field is infinite.")
 	}
 	if d.Char.Cmp(bigtwo) == 0 {
-		return Power(x, d.Degree-1)
+		y := x.Copy()
+		for i := 0; i < d.Degree-1; i++ {
+			y.Mul(y, y)
+		}
+		return y
 	}
 	zero := x.Zero()
 	one := x.One()

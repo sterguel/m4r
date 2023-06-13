@@ -2,7 +2,7 @@ package slab
 
 import (
 	"math/big"
-	"matmul/sfax"
+	"scale/sfax"
 )
 
 func NewMatrix[T sfax.FieldElement[T]](rows int, cols int, e T) Matrix[T] {
