@@ -143,7 +143,7 @@ func (x *pel) RawVal() uint64 {
 	return x.val
 }
 func (x *pel) Equals(y *pel) bool {
-	return (x.val == y.val)
+	return (x.val == y.val) && (x.Field == y.Field)
 }
 func (x *pel) FieldData() FieldData {
 	return x.Field.data
