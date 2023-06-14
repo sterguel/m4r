@@ -129,6 +129,10 @@ func (x *pel) Div(y *pel) *pel {
 	return k
 }
 func (x *pel) DivR(a *pel, b *pel) {
+	if x == a {
+		x.Set(a.Div(b))
+		return
+	}
 	x.InvR(b)
 	x.Mul(x, a)
 }
@@ -139,7 +143,7 @@ func (x *pel) RawVal() uint64 {
 	return x.val
 }
 func (x *pel) Equals(y *pel) bool {
-	return (x.val == y.val) && (x.Field == y.Field)
+	return (x.val == y.val)
 }
 func (x *pel) FieldData() FieldData {
 	return x.Field.data

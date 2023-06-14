@@ -130,6 +130,10 @@ func (a RatFunc[T]) Div(b RatFunc[T]) RatFunc[T] {
 	return q
 }
 func (x RatFunc[T]) DivR(a RatFunc[T], b RatFunc[T]) {
+	if &x.den.val[0] == &a.den.val[0] {
+		x.Set(a.Div(b))
+		return
+	}
 	x.InvR(b)
 	x.Mul(x, a)
 }

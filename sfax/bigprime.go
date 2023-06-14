@@ -215,6 +215,10 @@ func (a bpel) Div(b bpel) bpel {
 	return o
 }
 func (x bpel) DivR(a bpel, b bpel) {
+	if x.val == a.val {
+		x.Set(a.Div(b))
+		return
+	}
 	x.InvR(b)
 	x.Mul(x, a)
 }

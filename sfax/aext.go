@@ -55,6 +55,7 @@ func aexteeu[T FieldElement[T]](a []T, p []T, S []T) {
 	//computes s, such that sA + tP = 1
 	//destroys a, p
 	z := p[0].Zero()
+	one := p[0].One()
 	r2, r := strim(a, z), p
 	s2 := make([]T, len(S))
 	s2[0] = z.One()
@@ -84,9 +85,15 @@ func aexteeu[T FieldElement[T]](a []T, p []T, S []T) {
 		}
 		s, s2 = s2, s
 	}
+	if !r2[0].Equals(one) {
+		for _, v := range s2 {
+			v.DivR(v, r2[0])
+		}
+	}
 	if &s2[0] != &S[0] {
 		copy(S, s2)
 	}
+
 }
 
 type AlgExtField[T FieldElement[T]] struct {
@@ -367,6 +374,10 @@ func (x AlgExtElement[T]) Div(y AlgExtElement[T]) AlgExtElement[T] {
 	return z
 }
 func (x AlgExtElement[T]) DivR(a AlgExtElement[T], b AlgExtElement[T]) {
+	if &x.val[0] == &a.val[0] {
+		x.Set(a.Div(b))
+		return
+	}
 	x.InvR(b)
 	x.Mul(x, a)
 }

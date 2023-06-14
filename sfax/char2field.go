@@ -177,6 +177,10 @@ func (x *el2) Div(y *el2) *el2 {
 	return m
 }
 func (x *el2) DivR(a *el2, b *el2) {
+	if x == a {
+		x.Set(a.Div(b))
+		return
+	}
 	x.InvR(b)
 	x.Mul(a, x)
 }
