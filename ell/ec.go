@@ -73,6 +73,9 @@ func (p *ECPoint[T]) Plus(q *ECPoint[T]) *ECPoint[T] {
 	}
 	x3, y3, m, c := p.A.Zero(), p.A.Zero(), p.A.Zero(), p.A.Zero()
 	if p.X.Equals(q.X) {
+		if p.Y.Equals(c) {
+			return p.Zero()
+		}
 		if p.Y.Equals(q.Y) {
 			c.Mul(p.X, p.X)
 			m.Add(c, c)
@@ -110,6 +113,10 @@ func (z *ECPoint[T]) Add(p *ECPoint[T], q *ECPoint[T]) {
 	}
 	s, m, c := p.A.Zero(), p.A.Zero(), p.A.Zero()
 	if p.X.Equals(q.X) {
+		if p.Y.Equals(s) {
+			z.Inf = true
+			return
+		}
 		if p.Y.Equals(q.Y) {
 			c.Mul(p.X, p.X)
 			m.Add(c, c)

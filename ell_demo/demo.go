@@ -57,12 +57,19 @@ func F_demo() {
 
 }
 func Q_demo() {
-	A, B := sfax.Rat{big.NewRat(-351, 1)}, sfax.Rat{big.NewRat(1890, 1)}
+	A, B := sfax.Rat{big.NewRat(-756, 1)}, sfax.Rat{big.NewRat(4320, 1)}
 	P := &ell.ECPoint[sfax.Rat]{A, B, sfax.Rat{big.NewRat(-3, 1)}, sfax.Rat{big.NewRat(81, 1)}, false}
 	fmt.Printf("Curve Discriminant: %s\n", P.Discriminant().String())
 	fmt.Printf("P: %s\n", P.String())
 	fmt.Printf("Is P on the curve? %t\n", P.OnCurve())
-	fmt.Printf("4P: %s\n\n", sfax.ZMul(P, 4))
+	fmt.Printf("4P: %s\n", sfax.ZMul(P, 4))
+	T := &ell.ECPoint[sfax.Rat]{A, B, sfax.Rat{big.NewRat(24, 1)}, sfax.Rat{big.NewRat(0, 1)}, false}
+	fmt.Printf("T: %s\n", T.String())
+	fmt.Printf("Is T on the curve? %t\n", T.OnCurve())
+	fmt.Printf("2T: %s\n", sfax.ZMul(T, 2))
+	Q := P.Plus(T)
+	fmt.Printf("Q = P+T : %s \n", Q.String())
+	fmt.Printf("4Q: %s \n\n", sfax.ZMul(Q, 4))
 	//fmt.Printf("400P: %s\n\n", sfax.ZMul(P, 400))
 }
 func Qi_demo() {
@@ -77,7 +84,7 @@ func Qi_demo() {
 func main() {
 	fmt.Println("F = F_833191(a) where a^2 = 16a + 6, y^2 = x^3 + (420+69a)x + (61016+60a)\n")
 	F_demo()
-	fmt.Println("F = Q, y^2 = x^3 - 351x + 1890\n")
+	fmt.Println("F = Q, y^2 = x^3 - 756x + 4320\n")
 	Q_demo()
 	fmt.Println("F = Q[i], y^2 = x^3 - (3+8i)x -(34 + 32i)\n")
 	Qi_demo()
