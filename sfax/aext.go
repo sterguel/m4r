@@ -236,13 +236,14 @@ func (x AlgExtElement[T]) String() string {
 				a += "^" + strconv.Itoa(i)
 			}
 		}
-		if i != len(x.val)-1 {
-			a += "+"
-		}
-
+		a += "+"
 	}
+
 	if a == "" {
 		return "0"
+	}
+	if a[len(a)-1] == '+' {
+		return string(a[:len(a)-1])
 	}
 	return a
 }

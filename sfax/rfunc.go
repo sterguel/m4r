@@ -120,6 +120,10 @@ func (a RatFunc[T]) Inv() RatFunc[T] {
 	return out
 }
 func (a RatFunc[T]) InvR(b RatFunc[T]) {
+	if &a.den.val[0] == &b.den.val[0] {
+		a.Set(b.Inv())
+		return
+	}
 	a.num.Set(b.den)
 	a.den.Set(b.num)
 	a.mcanon()
@@ -138,7 +142,7 @@ func (x RatFunc[T]) DivR(a RatFunc[T], b RatFunc[T]) {
 	x.Mul(x, a)
 }
 func (x RatFunc[T]) Add(a RatFunc[T], b RatFunc[T]) {
-	if &x == &a || &x == &b {
+	if &x.den.val[0] == &a.den.val[0] || &x.den.val[0] == &b.den.val[0] {
 		x.Set(a.Plus(b))
 		return
 	}
@@ -149,8 +153,8 @@ func (x RatFunc[T]) Add(a RatFunc[T], b RatFunc[T]) {
 	x.canon()
 }
 func (x RatFunc[T]) Sub(a RatFunc[T], b RatFunc[T]) {
-	if &x == &a || &x == &b {
-		x.Set(a.Minus(b))
+	if &x.den.val[0] == &a.den.val[0] || &x.den.val[0] == &b.den.val[0] {
+		x.Set(a.Plus(b))
 		return
 	}
 	x.den.Mul(b.num, a.den)
