@@ -16,11 +16,12 @@ func (x RatFunc[T]) mcanon() {
 	ld := len(x.den.val)
 	fel := x.den.val[ld-1]
 	if !fel.Equals(x.den.ring.bone) {
+		inv := fel.Inv()
 		for _, v := range x.num.val {
-			v.DivR(v, fel)
+			v.Mul(v, inv)
 		}
 		for _, v := range x.den.val {
-			v.DivR(v, fel)
+			v.Mul(v, inv)
 		}
 	}
 }
